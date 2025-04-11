@@ -1,0 +1,111 @@
+% !TEX TS-program = xelatex
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{fontspec}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+% Font setup
+\setmainfont{Times New Roman}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{STAT448 Assignment 2}
+\lhead{David Ewing (82171165) \& Xia Yu (62380486)}
+\rfoot{\thepage}
+
+% Title spacing
+\titlespacing\section{0pt}{12pt plus 2pt minus 2pt}{6pt plus 2pt minus 2pt}
+\titlespacing\subsection{0pt}{10pt plus 2pt minus 2pt}{4pt plus 2pt minus 2pt}
+
+% Title Page
+\begin{document}
+
+\begin{titlepage}
+    \centreing
+    \vspace*{3cm}
+    
+    {\Huge\bfseries STAT448 Assignment 2 -- Regression Modelling Across Domains\par}
+    \vspace{1.5cm}
+    
+    {\Large\bfseries STAT448 – Assignment 2\par}
+    \vspace{2cm}
+    
+    \begin{flushleft}
+        \textbf{Submitted by:}\\
+        David Ewing (82171165)\\
+        Xia Yu (62380486)\\[1.5cm]
+
+        \textbf{Due Date:}\\
+        Friday 18th April 2025, 3:00 pm\\[1.5cm]
+
+        \textbf{University of Canterbury}\\
+        School of Mathematics and Statistics\\[1cm]
+    \end{flushleft}
+
+    \vfill
+    \begin{flushright}
+        \textit{“All work is our own. We have read and understood the university's policies on academic integrity.”}
+    \end{flushright}
+\end{titlepage}
+
+% Set spacing for main document
+\onehalfspacing
+
+% -------------------------------
+% Report Structure
+% -------------------------------
+
+\section*{1. Introduction}
+\begin{itemize}
+    \item Introduce the objective: predicting life expectancy using country-level indicators.
+    \item Briefly describe the dataset and modelling goals.
+    \item Outline the approach: modelling techniques, software (R), and reproducibility with seed 82171165 or 62380486.
+\end{itemize}
+
+\section*{2. Exploratory Data Analysis}
+\begin{itemize}
+    \item Summarise variable distributions and identify potential outliers.
+    \item Examine correlations between predictors and the response.
+    \item Include plots and discuss any data transformations or cleaning steps taken.
+\end{itemize}
+
+\section*{3. Modelling}
+\begin{itemize}
+    \item Fit at least three different models:
+    \begin{itemize}
+        \item Model 1: e.g., simple linear regression
+        \item Model 2: e.g., GLM with transformations
+        \item Model 3: e.g., ridge or lasso regression
+    \end{itemize}
+    \item For each model:
+    \begin{itemize}
+        \item Specify predictors and methodology
+        \item Include and label relevant R code
+        \item Present and interpret model results (coefficients, $R^2$, AIC, etc.)
+        \item Check assumptions and include diagnostic plots
+        \item Discuss strengths and limitations
+    \end{itemize}
+\end{itemize}
+
+\section*{4. Model Selection}
+\begin{itemize}
+    \item Choose the most appropriate model for prediction.
+    \item Justify the selection based on performance and assumptions.
+    \item Discuss the trade-offs and practical implications of model choice.
+\end{itemize}
+
+\section*{5. Conclusion}
+\begin{itemize}
+    \item Summarise key findings from the modelling process.
+    \item Reflect on limitations of the analysis.
+    \item Suggest directions for further work or improvement.
+\end{itemize}
+
+\end{document}

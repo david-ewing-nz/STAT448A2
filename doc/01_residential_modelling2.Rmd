@@ -1,0 +1,81 @@
+# Residential Modelling
+
+This section addresses **Question 1** of STAT448 Assignment 2, which involves regression modelling on a dataset of residential buildings.
+
+---
+
+## Question 1a – Correlation Structure
+
+We begin by exploring the correlation structure between the variables.
+
+```{r q1a-correlation-structure, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(GGally)
+
+# Assuming 'residen' is already loaded
+# Simple numeric subset for correlation
+residen_num <- dplyr::select_if(residen, is.numeric)
+
+# Simple correlation matrix plot
+ggpairs(residen_num)
+```
+
+---
+
+## Question 1b – Linear Regression Excluding V105
+
+Fit a linear regression model to predict `V104`, excluding the `V105` variable.
+
+```{r q1b-lm-no-v105}
+lm1 <- lm(V104 ~ . - V105, data = residen)
+summary(lm1)
+```
+
+---
+
+## Question 1c – Backward vs Stepwise Selection
+
+Here, we compare backward and stepwise selection techniques.
+
+```{r q1c-backward-stepwise}
+# Backward
+lm_back <- step(lm1, direction = "backward", trace = FALSE)
+
+# Stepwise (both directions)
+lm_step <- step(lm1, direction = "both", trace = FALSE)
+
+summary(lm_back)
+summary(lm_step)
+```
+
+---
+
+## Question 1d – Ridge vs LASSO Regression
+
+Fit penalised regression models (Ridge and LASSO) using cross-validation.
+
+```{r q1d-ridge-lasso, message=FALSE}
+library(glmnet)
+
+# Create model matrix
+x <- model.matrix(V104 ~ . - V105, data = residen)[, -1]
+y <- residen$V104
+
+# Ridge
+cv_ridge <- cv.glmnet(x, y, alpha = 0)
+plot(cv_ridge)
+
+# LASSO
+cv_lasso <- cv.glmnet(x, y, alpha = 1)
+plot(cv_lasso)
+```
+
+---
+
+## Question 1e – Model Selection Reflection
+
+We compare the different modelling approaches and summarise which is most appropriate in this context, based on model performance, cross-validation error, and interpretability.
+
+```{r q1e-model-reflection}
+cat("Based on cross-validation performance and coefficient simplicity, the LASSO model is likely to provide the best balance of accuracy and interpretability in this context.")
+```

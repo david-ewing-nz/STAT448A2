@@ -1,0 +1,53 @@
+
+\section*{Question 1 – Residential Modelling (40 marks)}
+
+You are working with a dataset on residential buildings to model the \textbf{actual sales price} (\texttt{V104}) using regression techniques. The dataset is available in two forms, but you are to use the R-ready \texttt{Residen.RData} file.
+
+\subsection*{(a) Correlation Structure (Exploratory Analysis)}
+\begin{itemize}
+  \item Explore and visualise the correlation between all variables.
+  \item Suggested tools: graphical methods such as heatmaps, pair plots, or correlation matrices.
+\end{itemize}
+
+\subsection*{(b) Linear Regression Excluding \texttt{V105}}
+\begin{itemize}
+  \item Fit a linear regression model to predict \texttt{V104} using all other variables \textbf{excluding \texttt{V105}} (actual construction costs).
+  \item Interpret the \texttt{summary()} output including coefficients, significance levels, and $R^2$.
+\end{itemize}
+
+\subsection*{(c) Variable Selection: Backward vs Stepwise}
+\begin{itemize}
+  \item Fit two additional models:
+  \begin{enumerate}
+    \item Backward selection
+    \item Stepwise selection
+  \end{enumerate}
+  \item Compare these models on:
+  \begin{itemize}
+    \item Model summary outputs
+    \item Computational time
+    \item Holdout Mean Square Error (MSE)
+    \item Cross-Validation MSE
+  \end{itemize}
+\end{itemize}
+
+\subsection*{(d) Penalised Regression: Ridge vs LASSO}
+\begin{itemize}
+  \item Fit two penalised regression models to predict \texttt{V104} (excluding \texttt{V105}):
+  \begin{enumerate}
+    \item Ridge regression
+    \item LASSO regression with optimal $\lambda$ via cross-validation
+  \end{enumerate}
+  \item Compare the two models on:
+  \begin{itemize}
+    \item Outputs
+    \item Computational time
+    \item Cross-Validation MSE
+  \end{itemize}
+\end{itemize}
+
+\subsection*{(e) Final Model Reflection}
+\begin{itemize}
+  \item Reflect on all models fitted in parts (b)--(d).
+  \item Justify which approach you prefer and explain how your results support this choice.
+\end{itemize}

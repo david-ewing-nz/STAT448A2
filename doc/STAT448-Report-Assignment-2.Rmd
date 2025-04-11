@@ -1,0 +1,249 @@
+```{r setup, include=FALSE}
+# This chunk was set up with the aid of ChatGPT.
+# The intent is to load updates quietly thus not
+# spending undue time with the logistics of getting 
+# setup. 
+
+#---------------- loading libraries ---------------------------
+#---------------- loading libraries ---------------------------
+# Load configuration for reproducibility and preferred CRAN mirror
+options(repos = c(CRAN = "https://cran.stat.auckland.ac.nz/"))
+
+# Required packages
+required_packages <- c(
+  "conflicted",    # Conflict resolution
+  "ggplot2",       # Core plotting
+  "dplyr",         # Data wrangling
+  "tidyverse",     # Core data science packages
+  "flextable",     # Summary tables
+  "skimr",         # Data summaries
+  "GGally",        # Pair plots
+  "MASS",          # LDA/QDA and logistic
+  "class",         # kNN
+  "caret",         # Model training utilities
+  "glmnet",        # Regularised regression
+  "cowplot",       # Plot composition
+  "knitr",         # Inline rendering
+  "kableExtra"     # Table formatting
+)
+
+for (pkg in required_packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg)
+  }
+  library(pkg, character.only = TRUE)
+}
+
+#---------------- conflict_prefer ------------------------------
+#---------------- conflict_prefer ------------------------------
+conflict_prefer("filter", "dplyr"); conflict_prefer("select", "dplyr")
+
+set.seed(82171165)
+knitr::opts_chunk$set(dev.args = list(png = list(type = "cairo")))
+
+
+# ---- Pretty Summary  with Type Summary and Preview ------
+# ---- Pretty Summary  with Type Summary and Preview ------
+# works with flextable; provides a summary of column types
+# and a preview
+
+pretty_summary <- \(df) {   # works with flextable 
+  select(df, where(is.numeric)) %>%
+    summarise(
+      across(
+        everything(),
+        .fns = list(
+          Mean     = \(x) mean(x, na.rm = TRUE),
+          Median   = \(x) median(x, na.rm = TRUE),
+          Min      = \(x) min(x, na.rm = TRUE),
+          Max      = \(x) max(x, na.rm = TRUE),
+          IQR      = \(x) IQR(x, na.rm = TRUE),
+          nNA      = \(x) sum(is.na(x))
+        )
+      )
+    ) %>%
+    pivot_longer(
+      cols = everything(),
+      names_to = c("Variable", ".value"),
+      names_sep = "_"
+    ) %>%
+    mutate(across(where(is.numeric), round, 2)) %>%
+    flextable() %>%
+    set_header_labels(
+      Variable = "Feature",
+      Mean     = "Mean",
+      Median   = "Median",
+      Min      = "Min",
+      Max      = "Max",
+      IQR      = "Interquartile Range",
+      nNA      = "Missing Values"
+    ) %>%
+    autofit() %>%
+    theme_vanilla()
+}
+
+# ---- Pretty csv_read with Type Summary and Preview ------
+# ---- Pretty csv_read with Type Summary and Preview ------ 
+# works with flextable; provides a summary of column types
+# and a preview
+
+pretty_read_csv <- \(path, n = 0) {                   # to work with flextable
+  df <- readr::read_csv(path, show_col_types = FALSE)
+  types <- purrr::map_chr(df, typeof)
+  type_df <- data.frame(Column = names(df), Type = types, stringsAsFactors = FALSE)
+
+  print(flextable::flextable(type_df) |>
+          flextable::autofit() |>
+          flextable::set_caption(caption = "Column Types in Loaded CSV"))
+
+  if (n > 0) print(head(df, n))
+  return(df)
+}
+
+# ---- Pretty Excel Reader with Type Summary and Preview ------
+# Uses flextable for consistent formatting with pretty_read_csv()
+
+pretty_read_xlsx <- \(path, sheet = 1, n = 0) {
+  # Read Excel file (defaults to first sheet)
+  df <- readxl::read_excel(path, sheet = sheet)
+  
+  # Summarise column types
+  types <- purrr::map_chr(df, typeof)
+  type_df <- data.frame(Column = names(df), Type = types, stringsAsFactors = FALSE)
+  
+  # Display types in a flextable
+  print(flextable::flextable(type_df) |>
+          flextable::autofit() |>
+          flextable::set_caption(caption = "Column Types in Loaded XLSX"))
+  
+  # Optionally preview first n rows
+  if (n > 0) print(head(df, n))
+  
+  return(df)
+}
+
+
+pretty_df <- function(df, title = NULL, fontsize = 10, max_rows = 20) {
+  df_show <- head(df, max_rows)  # Limit to first `max_rows` rows for readability
+  
+  ft <- flextable(df_show) %>%
+    fontsize(size = fontsize, part = "all") %>%
+    autofit() %>%
+    theme_booktabs() %>%
+    align(align = "center", part = "all") %>%
+    padding(padding = 5, part = "all") 
+  
+  if (!is.null(title)) {
+    ft <- set_caption(ft, caption = title)
+  }
+  
+  return(ft)
+}
+
+library(flextable)
+library(ggplot2)
+
+pretty_ggplot <- function(plot, title = "ggplot Summary") {
+  if (!inherits(plot, "gg")) stop("Input must be a ggplot object.")
+
+  # Extract key components
+  plot_data <- tryCatch(plot$data, error = function(e) NULL)
+  geoms <- sapply(plot$layers, function(layer) class(layer$geom)[1])
+  mappings <- plot$mapping
+  
+  # Pull out global aesthetics as strings
+  global_aes <- names(mappings)
+  global_vals <- sapply(mappings, function(x) rlang::expr_text(x))
+
+  # Additional metadata
+  plot_title <- plot$labels$title %||% ""
+  x_lab <- plot$labels$x %||% ""
+  y_lab <- plot$labels$y %||% ""
+  colour_lab <- plot$labels$colour %||% plot$labels$color %||% ""
+
+  # Build a metadata data frame
+  df <- data.frame(
+    Component = c("Title", "X Axis", "Y Axis", "Colour Legend", "Geoms", global_aes),
+    Value = c(plot_title, x_lab, y_lab, colour_lab, paste(geoms, collapse = ", "), global_vals),
+    stringsAsFactors = FALSE
+  )
+
+  # Format with flextable
+  flextable(df) %>%
+    set_caption(caption = title) %>%
+    autofit() %>%
+    theme_booktabs() %>%
+    fontsize(size = 10, part = "all") %>%
+    align(align = "left", part = "all") %>%
+    padding(padding = 4)
+}
+
+library(flextable)
+library(broom)
+
+library(flextable)
+library(broom)
+
+pretty_model <- function(model, title = "Model Summary", digits = 3) {
+  if (!inherits(model, "glm")) stop("Only 'glm' objects are currently supported.")
+  
+  # Use broom::tidy() for clean coefficient table
+  tidy_tbl <- broom::tidy(model) %>%
+    mutate(across(where(is.numeric), ~ round(.x, digits)))
+
+  # Optionally include model fit stats (like AIC, null deviance, etc.)
+  stats_tbl <- data.frame(
+    Metric = c("Formula", "AIC", "Null deviance", "Residual deviance"),
+    Value = c(
+      as.character(formula(model)),
+      round(AIC(model), digits),
+      round(model$null.deviance, digits),
+      round(model$deviance, digits)
+    ),
+    stringsAsFactors = FALSE
+  )
+  
+  # Format coefficient table
+  ft_coef <- flextable(tidy_tbl) %>%
+    set_caption(caption = title) %>%
+    autofit() %>%
+    theme_booktabs() %>%
+    fontsize(size = 10, part = "all") %>%
+    align(align = "center", part = "all") %>%
+    padding(padding = 4, part = "all")
+
+  # Format stats table separately (optional)
+  ft_stats <- flextable(stats_tbl) %>%
+    set_caption(caption = paste(title, "(Fit Stats)")) %>%
+    autofit() %>%
+    theme_booktabs() %>%
+    fontsize(size = 9, part = "all") %>%
+    align(align = "left", part = "all") %>%
+    padding(padding = 4, part = "all")
+  
+  # Return both as a list for separate rendering
+  list(Coefficients = ft_coef, Stats = ft_stats)
+}
+
+
+
+```
+
+# STAT448 Assignment 2 – Regression Modelling Across Domains
+
+This report addresses the three components of STAT448 Assignment 2, each focused on modelling using a different dataset. The project involves building, evaluating, and interpreting regression models using tools such as linear regression, stepwise selection, and regularised regression.
+
+```{r child = 'doc/01_residential_modelling.Rmd'}
+```
+
+#```{r child = 'doc/02_parkinsons_modelling.Rmd'}
+#```
+
+#```{r child = 'doc/03_weather_modelling.Rmd'}
+#```
+
+## Conclusion
+
+This report presented three focused modelling tasks corresponding to different datasets and modelling requirements. Each section includes analysis, model fitting, validation, and interpretation appropriate to the data and modelling technique.
+
+Please refer to each child document for details on preprocessing, model evaluation, and final conclusions.
